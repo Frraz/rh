@@ -32,14 +32,11 @@ services:
     container_name: rh_web
     restart: unless-stopped
     command: >
-      sh -c "python scripts/wait_for_db.py &&
-             python manage.py migrate --noinput &&
-             gunicorn config.wsgi:application
-               --bind 0.0.0.0:8000
-               --workers 3
-               --timeout 120
-               --access-logfile -
-               --error-logfile -"
+      sh -c "
+        python scripts/wait_for_db.py &&
+        python manage.py migrate --noinput &&
+        gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120 --access-logfile - --error-logfile -
+      "
     volumes:
       - media_data:/app/media
       - static_data:/app/staticfiles
