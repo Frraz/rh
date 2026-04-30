@@ -28,7 +28,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     container_name: rh_web
     restart: unless-stopped
     command: >
@@ -57,7 +57,7 @@ services:
   celery_worker:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     container_name: rh_celery_worker
     restart: unless-stopped
     command: celery -A config.celery worker --loglevel=info --concurrency=2
@@ -74,7 +74,7 @@ services:
   celery_beat:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     container_name: rh_celery_beat
     restart: unless-stopped
     command: celery -A config.celery beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
