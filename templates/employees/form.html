@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+{% block title %}{% if action == 'create' %}Novo Colaborador{% else %}Editar: {{ person.name }}{% endif %}{% endblock %}
+{% block mobile_title %}{% if action == 'create' %}Novo colaborador{% else %}Editar{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">
+      {% if action == 'create' %}Novo Colaborador{% else %}Editar: {{ person.name }}{% endif %}
+    </h1>
+    <p class="page-subtitle">Preencha os dados do colaborador</p>
+  </div>
+  <a href="{% url 'employees:list' %}" class="btn btn-secondary">Voltar</a>
+</div>
+
+<form method="post" enctype="multipart/form-data"
+      x-data="{ tipo: '{{ form.person_type.value|default:'employee' }}' }">
+  {% csrf_token %}
+  <div class="space-y-5">
+
+    <!-- Vínculo -->
+    <div class="form-section">
+      <h2 class="form-section-title">
+        <svg class="w-4 h-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16"/>
+        </svg>
+        Vínculo empregatício
+      </h2>
+      <div class="form-grid-3">
+        <div>
+          <label class="input-label">Tipo de contrato <span class="text-red-500">*</span></label>
+          <select name="person_type" x-model="tipo" class="input-field">
+            <option value="employee" {% if form.person_type.value == 'employee' %}selected{% endif %}>Funcionário CLT</option>
+            <option value="daily" {% if form.person_type.value == 'daily' %}selected{% endif %}>Diarista</option>
+          </select>
+        </div>
+        <div>
+          <label class="input-label">Entidade <span class="text-red-500">*</span></label>
+          <select name="entity" id="id_entity"
+                  class="input-field"
+                  hx-get="{% url 'employees:htmx_farms' %}"
+                  hx-target="#id_farm"
+                  hx-trigger="change"
+                  hx-include="[name='entity']"
+                  hx-get2="{% url 'employees:htmx_jobroles' %}"
+                  _="on change
+                     fetch '{% url 'employees:htmx_jobroles' %}?entity=' + me.value
+                     then put the result into #id_job_role.innerHTML">
+            <option value="">Selecione a entidade</option>
+            {% for entity in form.entity.field.queryset %}
+            <option value="{{ entity.pk }}"
+              {% if form.entity.value|stringformat:"s" == entity.pk|stringformat:"s" %}selected{% endif %}>
+              {{ entity.name }}
+            </option>
+            {% endfor %}
+          </select>
+          {% if form.entity.errors %}<p class="input-error">{{ form.entity.errors.0 }}</p>{% endif %}
+        </div>
+        <div>
+          <label class="input-label">Fazenda <span class="text-red-500">*</span></label>
+          <select name="farm" id="id_farm" class="input-field">
+            <option value="">Selecione a entidade primeiro</option>
+            {% if form.farm.value %}
+            {% for farm in form.farm.field.queryset %}
+            <option value="{{ farm.pk }}"
+              {% if form.farm.value|stringformat:"s" == farm.pk|stringformat:"s" %}selected{% endif %}>
+              {{ farm.name }}
+            </option>
+            {% endfor %}
+            {% endif %}
+          </select>
+          {% if form.farm.errors %}<p class="input-error">{{ form.farm.errors.0 }}</p>{% endif %}
+        </div>
+        <div>
+          <label class="input-label">Função <span class="text-red-500">*</span></label>
+          <select name="job_role" id="id_job_role" class="input-field">
+            <option value="">Selecione a entidade primeiro</option>
+            {% if form.job_role.value %}
+            {% for role in form.job_role.field.queryset %}
+            <option value="{{ role.pk }}"
+              {% if form.job_role.value|stringformat:"s" == role.pk|stringformat:"s" %}selected{% endif %}>
+              {{ role.name }}
+            </option>
+            {% endfor %}
+            {% endif %}
+          </select>
+          {% if form.job_role.errors %}<p class="input-error">{{ form.job_role.errors.0 }}</p>{% endif %}
+        </div>
+        <div>
+          <label class="input-label">Data de admissão <span class="text-red-500">*</span></label>
+          {{ form.admission_date }}
+          {% if form.admission_date.errors %}<p class="input-error">{{ form.admission_date.errors.0 }}</p>{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Dados pessoais -->
+    <div class="form-section">
+      <h2 class="form-section-title">
+        <svg class="w-4 h-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+        </svg>
+        Dados pessoais
+      </h2>
+      <div class="form-grid-3">
+        <div class="form-full">
+          <label class="input-label">Nome completo <span class="text-red-500">*</span></label>
+          {{ form.name }}
+          {% if form.name.errors %}<p class="input-error">{{ form.name.errors.0 }}</p>{% endif %}
+        </div>
+        <div>
+          <label class="input-label">CPF <span class="text-red-500">*</span></label>
+          {{ form.cpf }}
+          {% if form.cpf.errors %}<p class="input-error">{{ form.cpf.errors.0 }}</p>{% endif %}
+        </div>
+        <div>
+          <label class="input-label">RG</label>
+          {{ form.rg }}
+        </div>
+        <div>
+          <label class="input-label">Data de nascimento</label>
+          {{ form.birth_date }}
+        </div>
+        <div>
+          <label class="input-label">Telefone</label>
+          {{ form.phone }}
+        </div>
+        <div>
+          <label class="input-label">Estado civil</label>
+          {{ form.marital_status }}
+        </div>
+        <div class="form-full-3">
+          <label class="input-label">Endereço</label>
+          {{ form.address }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Dados trabalhistas -->
+    <div class="form-section">
+      <h2 class="form-section-title">
+        <svg class="w-4 h-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+        </svg>
+        Dados trabalhistas e remuneração
+      </h2>
+      <div class="form-grid-3">
+        <div>
+          <label class="input-label">PIS/PASEP</label>
+          {{ form.pis }}
+        </div>
+        <div>
+          <label class="input-label">CTPS</label>
+          {{ form.ctps }}
+        </div>
+        <div x-show="tipo === 'employee'">
+          <label class="input-label">
+            Salário mensal (R$)
+            <span class="text-red-500" x-show="tipo === 'employee'">*</span>
+          </label>
+          {{ form.salary }}
+          {% if form.salary.errors %}<p class="input-error">{{ form.salary.errors.0 }}</p>{% endif %}
+        </div>
+        <div x-show="tipo === 'daily'">
+          <label class="input-label">
+            Valor da diária (R$)
+            <span class="text-red-500" x-show="tipo === 'daily'">*</span>
+          </label>
+          {{ form.daily_rate }}
+          {% if form.daily_rate.errors %}<p class="input-error">{{ form.daily_rate.errors.0 }}</p>{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Dados bancários -->
+    <div class="form-section">
+      <h2 class="form-section-title">
+        <svg class="w-4 h-4 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+        </svg>
+        Dados bancários
+      </h2>
+      <div class="form-grid-3">
+        <div>
+          <label class="input-label">Banco</label>
+          {{ form.bank }}
+        </div>
+        <div>
+          <label class="input-label">Agência</label>
+          {{ form.bank_agency }}
+        </div>
+        <div>
+          <label class="input-label">Conta</label>
+          {{ form.bank_account }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Observações -->
+    <div class="form-section">
+      <h2 class="form-section-title">Observações</h2>
+      {{ form.notes }}
+    </div>
+
+    <!-- Ações -->
+    <div class="flex gap-3">
+      <button type="submit" class="btn btn-primary">
+        {% if action == 'create' %}Cadastrar colaborador{% else %}Salvar alterações{% endif %}
+      </button>
+      <a href="{% url 'employees:list' %}" class="btn btn-secondary">Cancelar</a>
+    </div>
+
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // HTMX: ao mudar entidade, atualiza fazendas e funções simultaneamente
+  document.getElementById('id_entity').addEventListener('change', function() {
+    var entityId = this.value;
+    var baseUrl = '{% url "employees:htmx_farms" %}';
+    var rolesUrl = '{% url "employees:htmx_jobroles" %}';
+
+    if (!entityId) {
+      document.getElementById('id_farm').innerHTML = '<option value="">Selecione a entidade primeiro</option>';
+      document.getElementById('id_job_role').innerHTML = '<option value="">Selecione a entidade primeiro</option>';
+      return;
+    }
+
+    // Atualizar fazendas
+    fetch(baseUrl + '?entity=' + entityId)
+      .then(function(r) { return r.text(); })
+      .then(function(html) {
+        document.getElementById('id_farm').innerHTML = html;
+      });
+
+    // Atualizar funções
+    fetch(rolesUrl + '?entity=' + entityId)
+      .then(function(r) { return r.text(); })
+      .then(function(html) {
+        document.getElementById('id_job_role').innerHTML = html;
+      });
+  });
+</script>
+{% endblock %}

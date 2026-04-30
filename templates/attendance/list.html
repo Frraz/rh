@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Descontos e Ajustes{% endblock %}
+{% block mobile_title %}Descontos{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Descontos e Ajustes</h1>
+    <p class="page-subtitle">
+      {{ current_month|stringformat:"02d" }}/{{ current_year }}
+      {% if total_discounts %}
+      &mdash; Total descontos: <span class="text-red-600 font-semibold">R$ {{ total_discounts|floatformat:2 }}</span>
+      {% endif %}
+    </p>
+  </div>
+  <div class="flex gap-2">
+    <a href="{% url 'attendance:installment_create' %}" class="btn btn-secondary">Parcelamento</a>
+    <a href="{% url 'attendance:create' %}" class="btn btn-primary">+ Novo ajuste</a>
+  </div>
+</div>
+
+<div class="card p-4 mb-4">
+  <form method="get" class="flex flex-wrap gap-3 items-end">
+    <div class="w-28">
+      <label class="input-label">Mês</label>
+      <select name="month" class="input-field">
+        <option value="1" {% if current_month == 1 %}selected{% endif %}>Janeiro</option>
+        <option value="2" {% if current_month == 2 %}selected{% endif %}>Fevereiro</option>
+        <option value="3" {% if current_month == 3 %}selected{% endif %}>Março</option>
+        <option value="4" {% if current_month == 4 %}selected{% endif %}>Abril</option>
+        <option value="5" {% if current_month == 5 %}selected{% endif %}>Maio</option>
+        <option value="6" {% if current_month == 6 %}selected{% endif %}>Junho</option>
+        <option value="7" {% if current_month == 7 %}selected{% endif %}>Julho</option>
+        <option value="8" {% if current_month == 8 %}selected{% endif %}>Agosto</option>
+        <option value="9" {% if current_month == 9 %}selected{% endif %}>Setembro</option>
+        <option value="10" {% if current_month == 10 %}selected{% endif %}>Outubro</option>
+        <option value="11" {% if current_month == 11 %}selected{% endif %}>Novembro</option>
+        <option value="12" {% if current_month == 12 %}selected{% endif %}>Dezembro</option>
+      </select>
+    </div>
+    <div class="w-28">
+      <label class="input-label">Ano</label>
+      <input type="number" name="year" value="{{ current_year }}" min="2020" max="2099" class="input-field" />
+    </div>
+    <div class="w-52">
+      <label class="input-label">Tipo</label>
+      <select name="type" class="input-field">
+        <option value="">Todos os tipos</option>
+        {% for val, label in adjustment_types %}
+        <option value="{{ val }}" {% if request.GET.type == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Filtrar</button>
+    <a href="{% url 'attendance:list' %}" class="btn btn-secondary">Limpar</a>
+  </form>
+</div>
+
+{% if adjustments %}
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Colaborador</th>
+        <th>Tipo</th>
+        <th class="hidden md:table-cell">Descrição</th>
+        <th class="hidden sm:table-cell">Origem</th>
+        <th class="text-right">Valor</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for adj in adjustments %}
+      <tr>
+        <td class="font-medium text-slate-900">{{ adj.person.name }}</td>
+        <td>
+          {% if adj.value < 0 %}
+          <span class="badge-danger">{{ adj.get_adjustment_type_display }}</span>
+          {% else %}
+          <span class="badge-active">{{ adj.get_adjustment_type_display }}</span>
+          {% endif %}
+        </td>
+        <td class="hidden md:table-cell text-slate-500 text-xs max-w-xs truncate">
+          {{ adj.description }}
+          {% if adj.installment_number %}
+          <span class="text-slate-400">({{ adj.installment_number }}/{{ adj.installment.num_installments }})</span>
+          {% endif %}
+        </td>
+        <td class="hidden sm:table-cell">
+          <span class="text-xs text-slate-400">{{ adj.get_origin_display }}</span>
+        </td>
+        <td class="text-right font-semibold {% if adj.value < 0 %}text-red-600{% else %}text-emerald-600{% endif %}">
+          R$ {{ adj.value|floatformat:2 }}
+        </td>
+        <td class="text-right">
+          {% if adj.origin == 'manual' %}
+          <form method="post" action="{% url 'attendance:delete' adj.pk %}" data-confirm="Remover este ajuste?">
+            {% csrf_token %}
+            <button type="submit" class="p-1.5 rounded text-slate-300 hover:text-red-500 hover:bg-red-50 transition">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card">
+  <div class="empty-state">
+    <p class="empty-state-title">Nenhum ajuste para {{ current_month|stringformat:"02d" }}/{{ current_year }}</p>
+    <p class="empty-state-desc">Registre um ajuste avulso ou crie um parcelamento.</p>
+    <a href="{% url 'attendance:create' %}" class="btn btn-primary mt-4">Novo ajuste</a>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

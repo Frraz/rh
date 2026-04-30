@@ -1,0 +1,13 @@
+{
+  "name": "rh-frontend",
+  "version": "1.0.0",
+  "description": "Frontend build para o sistema RH",
+  "scripts": {
+    "tailwind:build": "tailwindcss -i ./static/css/input.css -o ./static/css/output.css",
+    "tailwind:watch": "tailwindcss -i ./static/css/input.css -o ./static/css/output.css --watch",
+    "tailwind:prod": "tailwindcss -i ./static/css/input.css -o ./static/css/output.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.4"
+  }
+}

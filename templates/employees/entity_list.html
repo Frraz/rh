@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Entidades{% endblock %}
+{% block mobile_title %}Entidades{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Entidades</h1>
+    <p class="page-subtitle">Produtores e grupos econômicos cadastrados</p>
+  </div>
+  <a href="{% url 'employees:entity_create' %}" class="btn btn-primary">
+    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+    </svg>
+    Nova entidade
+  </a>
+</div>
+
+{% if entities %}
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th class="hidden sm:table-cell">CNPJ</th>
+        <th class="hidden md:table-cell">Telefone</th>
+        <th class="text-center">Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for entity in entities %}
+      <tr>
+        <td class="font-medium text-slate-900">{{ entity.name }}</td>
+        <td class="hidden sm:table-cell text-slate-500">{{ entity.cnpj|default:"—" }}</td>
+        <td class="hidden md:table-cell text-slate-500">{{ entity.phone|default:"—" }}</td>
+        <td class="text-center">
+          {% if entity.is_active %}
+          <span class="badge-active">Ativa</span>
+          {% else %}
+          <span class="badge-inactive">Inativa</span>
+          {% endif %}
+        </td>
+        <td class="text-right">
+          <a href="{% url 'employees:entity_update' entity.pk %}" class="btn btn-ghost btn-sm">Editar</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card">
+  <div class="empty-state">
+    <p class="empty-state-title">Nenhuma entidade cadastrada</p>
+    <a href="{% url 'employees:entity_create' %}" class="btn btn-primary mt-4">Nova entidade</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

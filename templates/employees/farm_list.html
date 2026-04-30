@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Fazendas{% endblock %}
+{% block mobile_title %}Fazendas{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Fazendas</h1>
+    <p class="page-subtitle">Propriedades vinculadas às entidades</p>
+  </div>
+  <a href="{% url 'employees:farm_create' %}" class="btn btn-primary">
+    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+    </svg>
+    Nova fazenda
+  </a>
+</div>
+
+{% if farms %}
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Entidade</th>
+        <th class="hidden sm:table-cell">Cidade/UF</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for farm in farms %}
+      <tr>
+        <td class="font-medium text-slate-900">{{ farm.name }}</td>
+        <td><span class="badge-info">{{ farm.entity.name }}</span></td>
+        <td class="hidden sm:table-cell text-slate-500">
+          {% if farm.city %}{{ farm.city }}{% if farm.state %}/{{ farm.state }}{% endif %}{% else %}—{% endif %}
+        </td>
+        <td class="text-right">
+          <a href="{% url 'employees:farm_update' farm.pk %}" class="btn btn-ghost btn-sm">Editar</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card">
+  <div class="empty-state">
+    <p class="empty-state-title">Nenhuma fazenda cadastrada</p>
+    <a href="{% url 'employees:farm_create' %}" class="btn btn-primary mt-4">Nova fazenda</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

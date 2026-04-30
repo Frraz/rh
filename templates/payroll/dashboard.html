@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% block title %}Fechamento Mensal{% endblock %}
+{% block mobile_title %}Fechamento{% endblock %}
+
+{% block extra_head %}
+<style>
+@media print {
+  .print-hidden { display: none !important; }
+  .table-wrapper { box-shadow: none !important; border: 1px solid #e2e8f0; }
+  .stat-card { border: 1px solid #e2e8f0 !important; box-shadow: none !important; }
+  body { font-size: 11px; }
+  [x-cloak] { display: block !important; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Fechamento Mensal</h1>
+    <p class="page-subtitle">
+      {{ current_month|stringformat:"02d" }}/{{ current_year }}
+      {% if selected_entity %}&mdash; {{ selected_entity.name }}{% endif %}
+    </p>
+  </div>
+  {% if folha %}
+  <button onclick="window.print()"
+          class="btn btn-secondary print-hidden">
+    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+    </svg>
+    Imprimir / PDF
+  </button>
+  {% endif %}
+</div>
+
+<div class="card p-4 mb-4 print-hidden">
+  <form method="get" class="flex flex-wrap gap-3 items-end">
+    <div class="w-28">
+      <label class="input-label">Mes</label>
+      <select name="month" class="input-field">
+        <option value="1" {% if current_month == 1 %}selected{% endif %}>Janeiro</option>
+        <option value="2" {% if current_month == 2 %}selected{% endif %}>Fevereiro</option>
+        <option value="3" {% if current_month == 3 %}selected{% endif %}>Marco</option>
+        <option value="4" {% if current_month == 4 %}selected{% endif %}>Abril</option>
+        <option value="5" {% if current_month == 5 %}selected{% endif %}>Maio</option>
+        <option value="6" {% if current_month == 6 %}selected{% endif %}>Junho</option>
+        <option value="7" {% if current_month == 7 %}selected{% endif %}>Julho</option>
+        <option value="8" {% if current_month == 8 %}selected{% endif %}>Agosto</option>
+        <option value="9" {% if current_month == 9 %}selected{% endif %}>Setembro</option>
+        <option value="10" {% if current_month == 10 %}selected{% endif %}>Outubro</option>
+        <option value="11" {% if current_month == 11 %}selected{% endif %}>Novembro</option>
+        <option value="12" {% if current_month == 12 %}selected{% endif %}>Dezembro</option>
+      </select>
+    </div>
+    <div class="w-28">
+      <label class="input-label">Ano</label>
+      <input type="number" name="year" value="{{ current_year }}" min="2020" max="2099" class="input-field" />
+    </div>
+    <div class="w-52">
+      <label class="input-label">Entidade</label>
+      <select name="entity" class="input-field">
+        <option value="">Todas as entidades</option>
+        {% for entity in entities %}
+        <option value="{{ entity.pk }}" {% if selected_entity.pk == entity.pk %}selected{% endif %}>
+          {{ entity.name }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Gerar folha</button>
+  </form>
+</div>
+
+{% if folha %}
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="stat-card">
+    <div class="stat-card-header"><span class="stat-card-label">Colaboradores</span></div>
+    <p class="stat-card-value">{{ total_pessoas }}</p>
+    <p class="stat-card-desc">Na folha</p>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-header"><span class="stat-card-label">Total bruto</span></div>
+    <p class="stat-card-value text-slate-700">R$ {{ total_bruto|floatformat:2 }}</p>
+    <p class="stat-card-desc">Salarios + creditos</p>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-header"><span class="stat-card-label">Total descontos</span></div>
+    <p class="stat-card-value text-red-600">R$ {{ total_descontos|floatformat:2 }}</p>
+    <p class="stat-card-desc">Faltas, parcelas, outros</p>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-header"><span class="stat-card-label">Total liquido</span></div>
+    <p class="stat-card-value text-emerald-600">R$ {{ total_liquido|floatformat:2 }}</p>
+    <p class="stat-card-desc">A pagar</p>
+  </div>
+</div>
+
+<div class="table-wrapper">
+  <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between print-hidden">
+    <h2 class="text-sm font-semibold text-slate-700">Detalhamento por colaborador</h2>
+    <span class="text-xs text-slate-400">{{ current_month|stringformat:"02d" }}/{{ current_year }}</span>
+  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Colaborador</th>
+        <th class="hidden sm:table-cell">Tipo</th>
+        <th class="hidden md:table-cell">Entidade</th>
+        <th class="text-right">Salario base</th>
+        <th class="text-right hidden md:table-cell">Descontos</th>
+        <th class="text-right hidden md:table-cell">Creditos</th>
+        <th class="text-right">Liquido</th>
+        <th class="print-hidden"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for linha in folha %}
+      <tr x-data="{ open: false }">
+        <td>
+          <div class="font-medium text-slate-900">{{ linha.person.name }}</div>
+          <div class="text-xs text-slate-400">{{ linha.person.job_role.name }}</div>
+        </td>
+        <td class="hidden sm:table-cell">
+          {% if linha.person.is_employee %}
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">CLT</span>
+          {% else %}
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-violet-100 text-violet-700">Diarista</span>
+          {% endif %}
+        </td>
+        <td class="hidden md:table-cell text-slate-500 text-sm">{{ linha.person.entity.name }}</td>
+        <td class="text-right text-slate-700">R$ {{ linha.salario_base|floatformat:2 }}</td>
+        <td class="text-right hidden md:table-cell {% if linha.descontos < 0 %}text-red-600{% else %}text-slate-400{% endif %}">
+          {% if linha.descontos %}R$ {{ linha.descontos|floatformat:2 }}{% else %}&mdash;{% endif %}
+        </td>
+        <td class="text-right hidden md:table-cell {% if linha.creditos > 0 %}text-emerald-600{% else %}text-slate-400{% endif %}">
+          {% if linha.creditos %}R$ {{ linha.creditos|floatformat:2 }}{% else %}&mdash;{% endif %}
+        </td>
+        <td class="text-right font-semibold {% if linha.liquido >= 0 %}text-emerald-700{% else %}text-red-700{% endif %}">
+          R$ {{ linha.liquido|floatformat:2 }}
+        </td>
+        <td class="text-right print-hidden">
+          {% if linha.adjustments %}
+          <button @click="open = !open"
+                  class="p-1.5 rounded text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition">
+            <svg class="w-4 h-4" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          {% endif %}
+        </td>
+      </tr>
+      {% if linha.adjustments %}
+      <tr x-show="open" x-cloak class="bg-slate-50">
+        <td colspan="8" class="px-6 py-3">
+          <p class="text-xs font-semibold text-slate-500 mb-2">Lancamentos do mes</p>
+          <div class="space-y-1">
+            {% for adj in linha.adjustments %}
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-600">{{ adj.get_adjustment_type_display }} &mdash; {{ adj.description|truncatechars:60 }}</span>
+              <span class="font-medium {% if adj.value < 0 %}text-red-600{% else %}text-emerald-600{% endif %}">
+                R$ {{ adj.value|floatformat:2 }}
+              </span>
+            </div>
+            {% endfor %}
+          </div>
+        </td>
+      </tr>
+      {% endif %}
+      {% endfor %}
+    </tbody>
+    <tfoot class="bg-slate-50">
+      <tr>
+        <td colspan="3" class="px-4 py-3 text-sm font-semibold text-slate-700">Total geral</td>
+        <td class="text-right px-4 py-3 font-semibold text-slate-700">R$ {{ total_bruto|floatformat:2 }}</td>
+        <td class="text-right px-4 py-3 font-semibold text-red-600 hidden md:table-cell">R$ {{ total_descontos|floatformat:2 }}</td>
+        <td class="hidden md:table-cell"></td>
+        <td class="text-right px-4 py-3 font-bold text-emerald-700">R$ {{ total_liquido|floatformat:2 }}</td>
+        <td class="print-hidden"></td>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+
+{% else %}
+<div class="card">
+  <div class="empty-state">
+    <svg class="empty-state-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+    </svg>
+    <p class="empty-state-title">Selecione o mes e gere a folha</p>
+    <p class="empty-state-desc">Escolha o mes, ano e entidade nos filtros acima.</p>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Novo Ajuste{% endblock %}
+{% block mobile_title %}Novo ajuste{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Registrar Ajuste</h1>
+    <p class="page-subtitle">Desconto ou crédito avulso vinculado a um mês</p>
+  </div>
+  <a href="{% url 'attendance:list' %}" class="btn btn-secondary">Voltar</a>
+</div>
+
+<div class="max-w-xl">
+  <div class="form-section">
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      {% for field in form %}
+      <div>
+        <label class="input-label">
+          {{ field.label }}
+          {% if field.field.required %}
+          <span class="text-red-500">*</span>
+          {% endif %}
+        </label>
+        {{ field }}
+        {% if field.errors %}
+        <p class="input-error">{{ field.errors.0 }}</p>
+        {% endif %}
+        {% if field.help_text %}
+        <p class="input-hint">{{ field.help_text }}</p>
+        {% endif %}
+      </div>
+      {% endfor %}
+      <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs text-slate-500">
+        Use valor <strong>negativo</strong> para descontos (ex: -150.00) e <strong>positivo</strong> para créditos (ex: 200.00).
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="submit" class="btn btn-primary">Registrar ajuste</button>
+        <a href="{% url 'attendance:list' %}" class="btn btn-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

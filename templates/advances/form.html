@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Novo Adiantamento{% endblock %}
+
+{% block content %}
+<div class="page-header mb-6">
+  <div>
+    <h1 class="page-title">Solicitar Adiantamento</h1>
+    <p class="page-subtitle">Preencha os dados da solicitação</p>
+  </div>
+  <a href="{% url 'advances:list' %}"
+     class="px-4 py-2 text-sm border border-slate-300 rounded-lg hover:bg-slate-50 transition">
+    Voltar
+  </a>
+</div>
+
+<div class="max-w-xl">
+  <div class="card p-6">
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      {% for field in form %}
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">
+          {{ field.label }}{% if field.field.required %} <span class="text-red-500">*</span>{% endif %}
+        </label>
+        {{ field }}
+        {% if field.errors %}
+        <p class="mt-1 text-xs text-red-600">{{ field.errors.0 }}</p>
+        {% endif %}
+      </div>
+      {% endfor %}
+      <div class="pt-4 flex gap-3">
+        <button type="submit"
+          class="px-5 py-2.5 bg-primary-600 text-white text-sm font-semibold rounded-lg
+                 hover:bg-primary-700 transition">
+          Solicitar adiantamento
+        </button>
+        <a href="{% url 'advances:list' %}"
+           class="px-4 py-2.5 text-sm text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50 transition">
+          Cancelar
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

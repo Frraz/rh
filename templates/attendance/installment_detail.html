@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Parcelamento — {{ installment.person.name }}{% endblock %}
+{% block mobile_title %}Parcelamento{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ installment.description }}</h1>
+    <p class="page-subtitle">{{ installment.person.name }} &mdash; {{ installment.get_installment_type_display }}</p>
+  </div>
+  <a href="{% url 'attendance:installment_list' %}" class="btn btn-secondary">Voltar</a>
+</div>
+
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+  <div class="stat-card">
+    <div class="stat-card-header">
+      <span class="stat-card-label">Valor total</span>
+    </div>
+    <p class="stat-card-value text-red-600">R$ {{ installment.total_value|floatformat:2 }}</p>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-header">
+      <span class="stat-card-label">Parcelas</span>
+    </div>
+    <p class="stat-card-value">{{ installment.num_installments }}x</p>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-header">
+      <span class="stat-card-label">Por mês</span>
+    </div>
+    <p class="stat-card-value">R$ {{ installment.installment_value|floatformat:2 }}</p>
+  </div>
+  <div class="stat-card">
+    <div class="stat-card-header">
+      <span class="stat-card-label">Início</span>
+    </div>
+    <p class="stat-card-value text-lg">{{ installment.first_reference_month|stringformat:"02d" }}/{{ installment.first_reference_year }}</p>
+  </div>
+</div>
+
+<div class="table-wrapper">
+  <div class="px-5 py-3 border-b border-slate-100">
+    <h2 class="text-sm font-semibold text-slate-700">Parcelas geradas</h2>
+  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="text-center">Parcela</th>
+        <th>Mês de referência</th>
+        <th class="text-right">Valor</th>
+        <th class="text-center">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for parcela in parcelas %}
+      <tr>
+        <td class="text-center font-semibold text-slate-600">
+          {{ parcela.installment_number }}/{{ installment.num_installments }}
+        </td>
+        <td class="text-slate-700">
+          {{ parcela.reference_month|stringformat:"02d" }}/{{ parcela.reference_year }}
+        </td>
+        <td class="text-right font-semibold text-red-600">R$ {{ parcela.value|floatformat:2 }}</td>
+        <td class="text-center">
+          {% if parcela.is_deleted %}
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500">Cancelada</span>
+          {% else %}
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">Ativa</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

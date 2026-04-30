@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Adiantamentos{% endblock %}
+{% block mobile_title %}Adiantamentos{% endblock %}
+
+{% block content %}
+<div class="page-header mb-6">
+  <div>
+    <h1 class="page-title">Adiantamentos</h1>
+    <p class="page-subtitle">
+      {% if pending_count > 0 %}
+      <span class="text-amber-600 font-semibold">{{ pending_count }} pendente{{ pending_count|pluralize:"s" }}</span>
+      {% else %}
+      Nenhum pendente
+      {% endif %}
+    </p>
+  </div>
+  <a href="{% url 'advances:create' %}"
+     class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white
+            text-sm font-medium rounded-lg hover:bg-primary-700 transition">
+    Novo adiantamento
+  </a>
+</div>
+
+<!-- Filtro de status -->
+<div class="flex gap-2 mb-4 flex-wrap">
+  <a href="{% url 'advances:list' %}"
+     class="px-3 py-1.5 text-xs rounded-full border transition
+            {% if not request.GET.status %}bg-primary-600 text-white border-primary-600{% else %}border-slate-300 text-slate-600 hover:bg-slate-50{% endif %}">
+    Todos
+  </a>
+  {% for val, label in statuses %}
+  <a href="?status={{ val }}"
+     class="px-3 py-1.5 text-xs rounded-full border transition
+            {% if request.GET.status == val %}bg-primary-600 text-white border-primary-600{% else %}border-slate-300 text-slate-600 hover:bg-slate-50{% endif %}">
+    {{ label }}
+  </a>
+  {% endfor %}
+</div>
+
+{% if advances %}
+<div class="card overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-slate-200 bg-slate-50">
+          <th class="text-left px-4 py-3 font-medium text-slate-600">Colaborador</th>
+          <th class="text-right px-4 py-3 font-medium text-slate-600">Valor</th>
+          <th class="text-center px-4 py-3 font-medium text-slate-600">Status</th>
+          <th class="text-left px-4 py-3 font-medium text-slate-600 hidden md:table-cell">Data</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for adv in advances %}
+        <tr class="hover:bg-slate-50 transition">
+          <td class="px-4 py-3 font-medium text-slate-900">{{ adv.person.name }}</td>
+          <td class="px-4 py-3 text-right font-semibold text-slate-800">
+            R$ {{ adv.requested_value|floatformat:2 }}
+          </td>
+          <td class="px-4 py-3 text-center">
+            {% if adv.status == 'pending' %}
+            <span class="badge-warning">Pendente</span>
+            {% elif adv.status == 'approved' %}
+            <span class="badge-active">Aprovado</span>
+            {% elif adv.status == 'rejected' %}
+            <span class="badge-danger">Rejeitado</span>
+            {% else %}
+            <span class="badge-inactive">Descontado</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3 text-slate-500 hidden md:table-cell">
+            {{ adv.request_date|date:"d/m/Y" }}
+          </td>
+          <td class="px-4 py-3 text-right">
+            <a href="{% url 'advances:detail' adv.pk %}"
+               class="text-xs text-primary-600 hover:text-primary-800 font-medium transition">
+              Ver detalhes
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="card p-12 text-center">
+  <p class="text-slate-500 font-medium">Nenhum adiantamento encontrado.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Funções{% endblock %}
+{% block mobile_title %}Funções{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Funções / Cargos</h1>
+    <p class="page-subtitle">Cargos disponíveis por entidade</p>
+  </div>
+  <a href="{% url 'employees:jobrole_create' %}" class="btn btn-primary">
+    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+    </svg>
+    Nova função
+  </a>
+</div>
+
+{% if job_roles %}
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Cargo</th>
+        <th>Entidade</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for role in job_roles %}
+      <tr>
+        <td class="font-medium text-slate-900">{{ role.name }}</td>
+        <td><span class="badge-info">{{ role.entity.name }}</span></td>
+        <td class="text-right">
+          <a href="{% url 'employees:jobrole_update' role.pk %}" class="btn btn-ghost btn-sm">
+            Editar
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card">
+  <div class="empty-state">
+    <p class="empty-state-title">Nenhuma função cadastrada</p>
+    <a href="{% url 'employees:jobrole_create' %}" class="btn btn-primary mt-4">Nova função</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block mobile_title %}Dashboard{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-subtitle">{{ hoje }}</p>
+  </div>
+</div>
+
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="stat-card">
+    <div class="stat-card-header">
+      <span class="stat-card-label">Funcionários CLT</span>
+      <div class="stat-card-icon bg-blue-50">
+        <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+        </svg>
+      </div>
+    </div>
+    <p class="stat-card-value">{{ total_employees }}</p>
+    <p class="stat-card-desc">Ativos</p>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-card-header">
+      <span class="stat-card-label">Diaristas</span>
+      <div class="stat-card-icon bg-violet-50">
+        <svg class="w-5 h-5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </div>
+    </div>
+    <p class="stat-card-value">{{ total_daily }}</p>
+    <p class="stat-card-desc">Ativos</p>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-card-header">
+      <span class="stat-card-label">Adiantamentos</span>
+      <div class="stat-card-icon bg-orange-50">
+        <svg class="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+    </div>
+    <p class="stat-card-value">{{ pending_advances }}</p>
+    <p class="stat-card-desc">Pendentes</p>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-card-header">
+      <span class="stat-card-label">Total colaboradores</span>
+      <div class="stat-card-icon bg-emerald-50">
+        <svg class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+    </div>
+    <p class="stat-card-value">{{ total_employees|add:total_daily }}</p>
+    <p class="stat-card-desc">Ativos no sistema</p>
+  </div>
+</div>
+
+<div class="card mb-6">
+  <div class="card-header">
+    <h2 class="text-sm font-semibold text-slate-700">Ações rápidas</h2>
+  </div>
+  <div class="p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+
+    <a href="{% url 'employees:create' %}"
+       class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 hover:border-primary-400 hover:bg-primary-50 transition group text-center">
+      <div class="w-9 h-9 bg-slate-100 group-hover:bg-primary-100 rounded-lg flex items-center justify-center transition">
+        <svg class="w-5 h-5 text-slate-500 group-hover:text-primary-600 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+        </svg>
+      </div>
+      <span class="text-xs font-medium text-slate-600 group-hover:text-primary-700 transition">Novo colaborador</span>
+    </a>
+
+    <a href="{% url 'attendance:create' %}"
+       class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 hover:border-primary-400 hover:bg-primary-50 transition group text-center">
+      <div class="w-9 h-9 bg-slate-100 group-hover:bg-primary-100 rounded-lg flex items-center justify-center transition">
+        <svg class="w-5 h-5 text-slate-500 group-hover:text-primary-600 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <span class="text-xs font-medium text-slate-600 group-hover:text-primary-700 transition">Registrar desconto</span>
+    </a>
+
+    <a href="{% url 'attendance:installment_create' %}"
+       class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 hover:border-primary-400 hover:bg-primary-50 transition group text-center">
+      <div class="w-9 h-9 bg-slate-100 group-hover:bg-primary-100 rounded-lg flex items-center justify-center transition">
+        <svg class="w-5 h-5 text-slate-500 group-hover:text-primary-600 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+      </div>
+      <span class="text-xs font-medium text-slate-600 group-hover:text-primary-700 transition">Novo parcelamento</span>
+    </a>
+
+    <a href="{% url 'payroll:termination_form' %}"
+       class="flex flex-col items-center gap-2 p-4 rounded-xl border-2 border-dashed border-slate-200 hover:border-primary-400 hover:bg-primary-50 transition group text-center">
+      <div class="w-9 h-9 bg-slate-100 group-hover:bg-primary-100 rounded-lg flex items-center justify-center transition">
+        <svg class="w-5 h-5 text-slate-500 group-hover:text-primary-600 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+      </div>
+      <span class="text-xs font-medium text-slate-600 group-hover:text-primary-700 transition">Calcular rescisão</span>
+    </a>
+
+  </div>
+</div>
+
+{% if recent_persons %}
+<div class="card overflow-hidden">
+  <div class="card-header">
+    <h2 class="text-sm font-semibold text-slate-700">Colaboradores recentes</h2>
+    <a href="{% url 'employees:list' %}" class="text-xs text-primary-600 hover:text-primary-800 font-medium">Ver todos</a>
+  </div>
+  <div class="divide-y divide-slate-100">
+    {% for person in recent_persons %}
+    <div class="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 transition">
+      <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+        <span class="text-xs font-bold text-primary-600">{{ person.name|first|upper }}</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <a href="{% url 'employees:detail' person.pk %}"
+           class="text-sm font-medium text-slate-900 hover:text-primary-600 transition truncate block">
+          {{ person.name }}
+        </a>
+        <p class="text-xs text-slate-400 truncate">
+          {{ person.job_role.name }} &middot; {{ person.farm.name }}
+        </p>
+      </div>
+      <span class="text-xs px-2 py-0.5 rounded-full flex-shrink-0 bg-blue-100 text-blue-700">
+        {{ person.get_person_type_display }}
+      </span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+templates/dashboard/index.html

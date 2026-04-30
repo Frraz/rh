@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Gerar Holerite — {{ person.name }}{% endblock %}
+{% block mobile_title %}Gerar holerite{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Gerar Holerite</h1>
+    <p class="page-subtitle">{{ person.name }} &mdash; {{ person.entity.name }}</p>
+  </div>
+  <a href="{% url 'employees:detail' person.pk %}" class="btn btn-secondary">Voltar</a>
+</div>
+
+<div class="max-w-md">
+  <div class="form-section">
+
+    <div class="flex items-center gap-3 mb-5 pb-4 border-b border-slate-100">
+      <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+        <span class="text-sm font-bold text-primary-600">{{ person.name|first|upper }}</span>
+      </div>
+      <div>
+        <p class="font-semibold text-slate-900">{{ person.name }}</p>
+        <p class="text-xs text-slate-500">
+          {{ person.get_person_type_display }} &mdash;
+          {% if person.is_employee %}
+          Salario: R$ {{ person.salary|floatformat:2 }}
+          {% else %}
+          Diaria: R$ {{ person.daily_rate|floatformat:2 }}
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    <form method="post" class="space-y-4"
+          x-data="{ dias: 0, diaria: {{ person.daily_rate|default:0 }} }">
+      {% csrf_token %}
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="input-label">Mes de referencia <span class="text-red-500">*</span></label>
+          <select name="month" class="input-field">
+            {% for num, nome in meses.items %}
+            <option value="{{ num }}" {% if num == current_month %}selected{% endif %}>{{ nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="input-label">Ano <span class="text-red-500">*</span></label>
+          <input type="number" name="year" value="{{ current_year }}" min="2020" max="2099" class="input-field" />
+        </div>
+      </div>
+
+      {% if not person.is_employee %}
+      <div>
+        <label class="input-label">Dias trabalhados no mes <span class="text-red-500">*</span></label>
+        <input type="number" name="dias" min="0" max="31" value="0"
+               class="input-field"
+               x-model.number="dias" />
+        <div class="mt-2 bg-primary-50 border border-primary-200 rounded-lg px-3 py-2"
+             x-show="dias > 0">
+          <p class="text-sm text-primary-800">
+            Total: <strong x-text="'R$ ' + (dias * diaria).toFixed(2)"></strong>
+          </p>
+        </div>
+        <p class="input-hint">Informe os dias efetivamente trabalhados</p>
+      </div>
+      {% else %}
+      <input type="hidden" name="dias" value="0" />
+      <div class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-600">
+        Funcionario CLT &mdash; salario mensal fixo de <strong>R$ {{ person.salary|floatformat:2 }}</strong>
+      </div>
+      {% endif %}
+
+      <div class="flex gap-3 pt-2">
+        <button type="submit" class="btn btn-primary">Gerar holerite</button>
+        <a href="{% url 'employees:detail' person.pk %}" class="btn btn-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

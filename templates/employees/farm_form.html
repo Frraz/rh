@@ -1,0 +1,53 @@
+{% extends "base.html" %} {% block title %}{% if action == 'edit' %}Editar
+Fazenda{% else %}Nova Fazenda{% endif %}{% endblock %} {% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">
+      {% if action == 'edit' %}Editar Fazenda{% else %}Nova Fazenda{% endif %}
+    </h1>
+  </div>
+  <a href="{% url 'employees:farm_list' %}" class="btn btn-secondary">Voltar</a>
+</div>
+
+<div class="max-w-lg">
+  <div class="form-section">
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      <div>
+        <label class="input-label"
+          >Entidade <span class="text-red-500">*</span></label
+        >
+        {{ form.entity }} {% if form.entity.errors %}
+        <p class="input-error">{{ form.entity.errors.0 }}</p>
+        {% endif %}
+      </div>
+      <div>
+        <label class="input-label"
+          >Nome da fazenda <span class="text-red-500">*</span></label
+        >
+        {{ form.name }} {% if form.name.errors %}
+        <p class="input-error">{{ form.name.errors.0 }}</p>
+        {% endif %}
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="input-label">Cidade</label>
+          {{ form.city }}
+        </div>
+        <div>
+          <label class="input-label">UF</label>
+          {{ form.state }}
+        </div>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="submit" class="btn btn-primary">
+          {% if action == 'edit' %}Salvar{% else %}Cadastrar fazenda{% endif %}
+        </button>
+        <a href="{% url 'employees:farm_list' %}" class="btn btn-secondary"
+          >Cancelar</a
+        >
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

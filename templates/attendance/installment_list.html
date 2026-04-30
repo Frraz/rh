@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Parcelamentos{% endblock %}
+{% block mobile_title %}Parcelamentos{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Descontos Parcelados</h1>
+    <p class="page-subtitle">Adiantamentos e empréstimos com desconto em parcelas mensais</p>
+  </div>
+  <a href="{% url 'attendance:installment_create' %}" class="btn btn-primary">+ Novo parcelamento</a>
+</div>
+
+{% if installments %}
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Colaborador</th>
+        <th>Descrição</th>
+        <th class="hidden sm:table-cell">Tipo</th>
+        <th class="text-right">Total</th>
+        <th class="text-center hidden md:table-cell">Parcelas</th>
+        <th class="text-right hidden md:table-cell">Por mês</th>
+        <th class="hidden lg:table-cell">Início</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for inst in installments %}
+      <tr>
+        <td class="font-medium text-slate-900">{{ inst.person.name }}</td>
+        <td class="text-slate-600">{{ inst.description }}</td>
+        <td class="hidden sm:table-cell">
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+            {{ inst.get_installment_type_display }}
+          </span>
+        </td>
+        <td class="text-right font-semibold text-red-600">R$ {{ inst.total_value|floatformat:2 }}</td>
+        <td class="text-center hidden md:table-cell text-slate-600">{{ inst.num_installments }}x</td>
+        <td class="text-right hidden md:table-cell text-slate-600">R$ {{ inst.installment_value|floatformat:2 }}</td>
+        <td class="hidden lg:table-cell text-slate-500 text-sm">
+          {{ inst.first_reference_month|stringformat:"02d" }}/{{ inst.first_reference_year }}
+        </td>
+        <td class="text-right">
+          <a href="{% url 'attendance:installment_detail' inst.pk %}" class="btn btn-ghost btn-sm">Ver parcelas</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card">
+  <div class="empty-state">
+    <p class="empty-state-title">Nenhum parcelamento cadastrado</p>
+    <p class="empty-state-desc">Registre adiantamentos e empréstimos para desconto em parcelas mensais.</p>
+    <a href="{% url 'attendance:installment_create' %}" class="btn btn-primary mt-4">Novo parcelamento</a>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

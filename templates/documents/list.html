@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Documentos{% endblock %}
+{% block mobile_title %}Documentos{% endblock %}
+
+{% block content %}
+<div class="page-header mb-6">
+  <div>
+    <h1 class="page-title">Documentos</h1>
+    <p class="page-subtitle">Arquivos e certificados dos colaboradores</p>
+  </div>
+  <a href="{% url 'documents:create' %}"
+     class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white
+            text-sm font-medium rounded-lg hover:bg-primary-700 transition">
+    Adicionar documento
+  </a>
+</div>
+
+<!-- Filtros -->
+<div class="card p-4 mb-4">
+  <form method="get" class="flex flex-wrap gap-3 items-end">
+    <div class="w-44">
+      <label class="block text-xs font-medium text-slate-600 mb-1">Tipo</label>
+      <select name="type" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+        <option value="">Todos os tipos</option>
+        {% for dt in document_types %}
+        <option value="{{ dt.pk }}" {% if request.GET.type == dt.pk|stringformat:"s" %}selected{% endif %}>
+          {{ dt.name }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="w-40">
+      <label class="block text-xs font-medium text-slate-600 mb-1">Status</label>
+      <select name="status" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none">
+        <option value="">Todos</option>
+        {% for val, label in statuses %}
+        <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="px-4 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition">
+      Filtrar
+    </button>
+    <a href="{% url 'documents:list' %}" class="px-4 py-2 text-sm text-slate-500 hover:text-slate-700 transition">
+      Limpar
+    </a>
+  </form>
+</div>
+
+{% if documents %}
+<div class="card overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-slate-200 bg-slate-50">
+          <th class="text-left px-4 py-3 font-medium text-slate-600">Colaborador</th>
+          <th class="text-left px-4 py-3 font-medium text-slate-600 hidden sm:table-cell">Tipo</th>
+          <th class="text-center px-4 py-3 font-medium text-slate-600">Status</th>
+          <th class="text-left px-4 py-3 font-medium text-slate-600 hidden md:table-cell">Vencimento</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for doc in documents %}
+        <tr class="hover:bg-slate-50 transition">
+          <td class="px-4 py-3 font-medium text-slate-900">{{ doc.person.name }}</td>
+          <td class="px-4 py-3 text-slate-600 hidden sm:table-cell">{{ doc.document_type.name }}</td>
+          <td class="px-4 py-3 text-center">
+            {% if doc.status == 'valid' %}
+            <span class="badge-active">Válido</span>
+            {% elif doc.status == 'expiring' %}
+            <span class="badge-warning">Vencendo</span>
+            {% else %}
+            <span class="badge-danger">Vencido</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3 text-slate-500 hidden md:table-cell">
+            {{ doc.expiry_date|date:"d/m/Y"|default:"—" }}
+          </td>
+          <td class="px-4 py-3 text-right">
+            <div class="flex items-center gap-2 justify-end">
+              {% if doc.file %}
+              <a href="{{ doc.file.url }}" target="_blank"
+                 class="p-1.5 text-slate-400 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition"
+                 title="Visualizar arquivo">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </a>
+              {% endif %}
+              <form method="post" action="{% url 'documents:delete' doc.pk %}"
+                    data-confirm="Remover este documento?">
+                {% csrf_token %}
+                <button type="submit"
+                        class="p-1.5 text-slate-300 hover:text-red-500 rounded-lg hover:bg-red-50 transition">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="card p-12 text-center">
+  <p class="text-slate-500 font-medium">Nenhum documento encontrado.</p>
+  <a href="{% url 'documents:create' %}"
+     class="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition">
+    Adicionar documento
+  </a>
+</div>
+{% endif %}
+{% endblock %}

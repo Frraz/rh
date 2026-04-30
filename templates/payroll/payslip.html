@@ -1,0 +1,334 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Holerite — {{ person.name }} — {{ month_name }}/{{ year }}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      font-size: 12px;
+      color: #1e293b;
+      background: #f1f5f9;
+    }
+
+    .page {
+      max-width: 720px;
+      margin: 32px auto;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    /* Cabeçalho */
+    .header {
+      background: #0284c7;
+      color: white;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .header-title { font-size: 18px; font-weight: 700; }
+    .header-sub { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+    .header-right { text-align: right; font-size: 11px; opacity: 0.9; }
+    .header-period { font-size: 15px; font-weight: 700; margin-top: 2px; }
+
+    /* Dados do colaborador */
+    .employee-section {
+      background: #f8fafc;
+      border-bottom: 2px solid #e2e8f0;
+      padding: 16px 24px;
+    }
+    .employee-name { font-size: 15px; font-weight: 700; color: #0f172a; }
+    .employee-meta {
+      display: flex; gap: 24px; flex-wrap: wrap;
+      margin-top: 8px; font-size: 11px; color: #64748b;
+    }
+    .employee-meta span strong { color: #334155; }
+
+    /* Tabela de lançamentos */
+    .section-title {
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      color: #64748b;
+      padding: 10px 24px 6px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th {
+      font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      color: #94a3b8;
+      padding: 8px 24px;
+      text-align: left;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    th.right { text-align: right; }
+    td {
+      padding: 7px 24px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 12px;
+      color: #334155;
+    }
+    td.right { text-align: right; }
+    td.negative { color: #dc2626; font-weight: 600; }
+    td.positive { color: #16a34a; font-weight: 600; }
+    td.type-badge {
+      font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      color: #0369a1;
+    }
+
+    /* Totais */
+    .totals {
+      padding: 16px 24px;
+      background: #f8fafc;
+      border-top: 2px solid #e2e8f0;
+    }
+    .totals-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }
+    .total-item { text-align: center; }
+    .total-label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+    .total-value { font-size: 16px; font-weight: 700; margin-top: 2px; }
+    .total-value.green { color: #16a34a; }
+    .total-value.red { color: #dc2626; }
+    .total-value.blue { color: #0284c7; }
+
+    /* Líquido final */
+    .net-pay {
+      background: #0284c7;
+      color: white;
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .net-pay-label { font-size: 13px; font-weight: 600; }
+    .net-pay-value { font-size: 22px; font-weight: 700; }
+
+    /* Assinatura */
+    .signature {
+      padding: 24px 24px 20px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .signature-text { font-size: 10px; color: #94a3b8; text-align: center; margin-bottom: 32px; }
+    .signature-lines {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+    .signature-line { text-align: center; }
+    .signature-line-bar {
+      border-top: 1px solid #334155;
+      margin-bottom: 4px;
+    }
+    .signature-line-label { font-size: 10px; color: #64748b; }
+
+    /* Botões — apenas na tela, não no PDF */
+    .print-controls {
+      max-width: 720px;
+      margin: 0 auto 16px;
+      display: flex;
+      gap: 8px;
+      padding: 0 0;
+    }
+    .btn-print {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: 8px;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; border: none; text-decoration: none;
+    }
+    .btn-primary-print {
+      background: #0284c7; color: white;
+    }
+    .btn-primary-print:hover { background: #0369a1; }
+    .btn-secondary-print {
+      background: white; color: #475569;
+      border: 1px solid #cbd5e1;
+    }
+    .btn-secondary-print:hover { background: #f8fafc; }
+
+    /* Rodapé -->
+    .footer {
+      padding: 10px 24px;
+      border-top: 1px solid #f1f5f9;
+      text-align: center;
+      font-size: 9px;
+      color: #cbd5e1;
+    }
+
+    /* Print styles */
+    @media print {
+      body { background: white; }
+      .page { margin: 0; border: none; border-radius: 0; box-shadow: none; }
+      .print-controls { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="print-controls no-print">
+  <a href="javascript:window.print()" class="btn-print btn-primary-print">
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+    </svg>
+    Imprimir / Salvar PDF
+  </a>
+  <a href="{% url 'employees:detail' person.pk %}" class="btn-print btn-secondary-print">
+    Voltar
+  </a>
+</div>
+
+<div class="page">
+
+  <!-- Cabeçalho -->
+  <div class="header">
+    <div>
+      <div class="header-title">RECIBO DE PAGAMENTO</div>
+      <div class="header-sub">{{ person.entity.name }} &mdash; {{ person.farm.name }}</div>
+    </div>
+    <div class="header-right">
+      <div>Competência</div>
+      <div class="header-period">{{ month_name|upper }} / {{ year }}</div>
+    </div>
+  </div>
+
+  <!-- Dados do colaborador -->
+  <div class="employee-section">
+    <div class="employee-name">{{ person.name }}</div>
+    <div class="employee-meta">
+      <span><strong>Função:</strong> {{ person.job_role.name }}</span>
+      <span><strong>Admissão:</strong> {{ person.admission_date|date:"d/m/Y"|default:"—" }}</span>
+      <span><strong>CPF:</strong> {{ person.cpf|default:"—" }}</span>
+      <span><strong>Tipo:</strong> {{ person.get_person_type_display }}</span>
+      {% if person.pis %}
+      <span><strong>PIS:</strong> {{ person.pis }}</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Proventos -->
+  <div class="section-title">Proventos</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Descrição</th>
+        <th class="right">Valor (R$)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if person.is_employee %}
+      <tr>
+        <td>Salário mensal</td>
+        <td class="right positive">{{ salario_base|floatformat:2 }}</td>
+      </tr>
+      {% else %}
+      <tr>
+        <td>
+          Diária ({{ dias_trabalhados }} dia{{ dias_trabalhados|pluralize }}
+          × R$ {{ person.daily_rate|floatformat:2 }})
+        </td>
+        <td class="right positive">{{ salario_base|floatformat:2 }}</td>
+      </tr>
+      {% endif %}
+      {% for adj in creditos %}
+      <tr>
+        <td>
+          <span class="type-badge">{{ adj.get_adjustment_type_display }}</span>
+          {% if adj.description %} — {{ adj.description }}{% endif %}
+        </td>
+        <td class="right positive">{{ adj.value|floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Descontos -->
+  {% if descontos %}
+  <div class="section-title" style="margin-top: 8px;">Descontos</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Descrição</th>
+        <th class="right">Valor (R$)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for adj in descontos %}
+      <tr>
+        <td>
+          <span class="type-badge">{{ adj.get_adjustment_type_display }}</span>
+          {% if adj.description %} — {{ adj.description }}{% endif %}
+          {% if adj.installment_number %}
+          (parcela {{ adj.installment_number }}/{{ adj.installment.num_installments }})
+          {% endif %}
+        </td>
+        <td class="right negative">{{ adj.value|floatformat:2 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <!-- Totais -->
+  <div class="totals">
+    <div class="totals-grid">
+      <div class="total-item">
+        <div class="total-label">Total proventos</div>
+        <div class="total-value green">R$ {{ total_proventos|floatformat:2 }}</div>
+      </div>
+      <div class="total-item">
+        <div class="total-label">Total descontos</div>
+        <div class="total-value red">R$ {{ total_descontos|floatformat:2 }}</div>
+      </div>
+      <div class="total-item">
+        <div class="total-label">Líquido a receber</div>
+        <div class="total-value blue">R$ {{ liquido|floatformat:2 }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Líquido destacado -->
+  <div class="net-pay">
+    <div class="net-pay-label">VALOR LÍQUIDO A RECEBER</div>
+    <div class="net-pay-value">R$ {{ liquido|floatformat:2 }}</div>
+  </div>
+
+  <!-- Assinatura -->
+  <div class="signature">
+    <div class="signature-text">
+      Declaro que recebi a importância líquida discriminada neste recibo, referente ao mês de {{ month_name }} de {{ year }}.
+    </div>
+    <div class="signature-lines">
+      <div class="signature-line">
+        <div class="signature-line-bar"></div>
+        <div class="signature-line-label">{{ person.name }}</div>
+      </div>
+      <div class="signature-line">
+        <div class="signature-line-bar"></div>
+        <div class="signature-line-label">{{ person.entity.name }} — Responsável</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Documento gerado pelo Sistema RH &mdash; {{ month_name }}/{{ year }}
+  </div>
+
+</div>
+
+</body>
+</html>

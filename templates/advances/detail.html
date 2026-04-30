@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}Adiantamento{% endblock %}
+
+{% block content %}
+<div class="page-header mb-6">
+  <div>
+    <h1 class="page-title">Adiantamento</h1>
+    <p class="page-subtitle">{{ advance.person.name }}</p>
+  </div>
+  <a href="{% url 'advances:list' %}"
+     class="px-4 py-2 text-sm border border-slate-300 rounded-lg hover:bg-slate-50 transition">
+    Voltar
+  </a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-2 space-y-6">
+
+    <!-- Dados da solicitação -->
+    <div class="card p-6">
+      <h2 class="text-sm font-semibold text-slate-700 mb-4">Dados da solicitação</h2>
+      <dl class="grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <dt class="text-xs text-slate-500">Colaborador</dt>
+          <dd class="font-medium text-slate-800 mt-0.5">{{ advance.person.name }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-slate-500">Valor solicitado</dt>
+          <dd class="font-bold text-slate-800 mt-0.5">R$ {{ advance.requested_value|floatformat:2 }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-slate-500">Data da solicitação</dt>
+          <dd class="font-medium text-slate-800 mt-0.5">{{ advance.request_date|date:"d/m/Y" }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-slate-500">Solicitado por</dt>
+          <dd class="font-medium text-slate-800 mt-0.5">{{ advance.requested_by }}</dd>
+        </div>
+        {% if advance.reason %}
+        <div class="col-span-2">
+          <dt class="text-xs text-slate-500">Motivo</dt>
+          <dd class="font-medium text-slate-800 mt-0.5">{{ advance.reason }}</dd>
+        </div>
+        {% endif %}
+      </dl>
+    </div>
+
+    <!-- Resultado da análise (se já avaliado) -->
+    {% if advance.status != 'pending' %}
+    <div class="card p-6">
+      <h2 class="text-sm font-semibold text-slate-700 mb-4">Resultado da análise</h2>
+      <dl class="grid grid-cols-2 gap-4 text-sm">
+        {% if advance.approved_value %}
+        <div>
+          <dt class="text-xs text-slate-500">Valor aprovado</dt>
+          <dd class="font-bold text-emerald-700 mt-0.5">R$ {{ advance.approved_value|floatformat:2 }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-slate-500">Desconto em</dt>
+          <dd class="font-medium text-slate-800 mt-0.5">
+            {{ advance.discount_reference_month|stringformat:"02d" }}/{{ advance.discount_reference_year }}
+          </dd>
+        </div>
+        {% endif %}
+        {% if advance.rejection_reason %}
+        <div class="col-span-2">
+          <dt class="text-xs text-slate-500">Motivo da rejeição</dt>
+          <dd class="text-red-600 mt-0.5">{{ advance.rejection_reason }}</dd>
+        </div>
+        {% endif %}
+        <div>
+          <dt class="text-xs text-slate-500">Avaliado por</dt>
+          <dd class="font-medium text-slate-800 mt-0.5">{{ advance.reviewed_by }}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-slate-500">Avaliado em</dt>
+          <dd class="font-medium text-slate-800 mt-0.5">{{ advance.reviewed_at|date:"d/m/Y H:i" }}</dd>
+        </div>
+      </dl>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Painel lateral -->
+  <div class="space-y-4">
+    <!-- Status -->
+    <div class="card p-5">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Status</p>
+      {% if advance.status == 'pending' %}
+      <span class="badge-warning text-sm">Pendente</span>
+      {% elif advance.status == 'approved' %}
+      <span class="badge-active text-sm">Aprovado</span>
+      {% elif advance.status == 'rejected' %}
+      <span class="badge-danger text-sm">Rejeitado</span>
+      {% else %}
+      <span class="badge-inactive text-sm">Descontado</span>
+      {% endif %}
+    </div>
+
+    <!-- Ações para aprovação -->
+    {% if advance.status == 'pending' and request.user.is_hr %}
+    <div class="card p-5">
+      <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Ações</p>
+
+      <!-- Formulário de aprovação -->
+      <form method="post" action="{% url 'advances:approve' advance.pk %}" class="space-y-3 mb-4">
+        {% csrf_token %}
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Valor a aprovar (R$)</label>
+          <input type="number" name="approved_value" step="0.01"
+                 value="{{ advance.requested_value }}"
+                 class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Mês desconto</label>
+            <input type="number" name="discount_month" min="1" max="12"
+                   class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Ano desconto</label>
+            <input type="number" name="discount_year"
+                   class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+          </div>
+        </div>
+        <button type="submit"
+          class="w-full py-2 text-sm font-semibold text-white bg-emerald-600 rounded-lg
+                 hover:bg-emerald-700 transition">
+          Aprovar
+        </button>
+      </form>
+
+      <!-- Formulário de rejeição -->
+      <form method="post" action="{% url 'advances:reject' advance.pk %}"
+            data-confirm="Confirmar rejeição deste adiantamento?">
+        {% csrf_token %}
+        <textarea name="rejection_reason" rows="2" placeholder="Motivo da rejeição..."
+                  class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none mb-2"></textarea>
+        <button type="submit"
+          class="w-full py-2 text-sm font-medium text-red-600 border border-red-200
+                 rounded-lg hover:bg-red-50 transition">
+          Rejeitar
+        </button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

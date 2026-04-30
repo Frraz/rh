@@ -1,0 +1,57 @@
+{% extends "base.html" %} {% block title %}{% if action == 'edit' %}Editar
+Entidade{% else %}Nova Entidade{% endif %}{% endblock %} {% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">
+      {% if action == 'edit' %}Editar Entidade{% else %}Nova Entidade{% endif %}
+    </h1>
+    <p class="page-subtitle">Produtor ou grupo econômico</p>
+  </div>
+  <a href="{% url 'employees:entity_list' %}" class="btn btn-secondary"
+    >Voltar</a
+  >
+</div>
+
+<div class="max-w-2xl">
+  <div class="form-section">
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      <div class="form-grid">
+        <div class="form-full">
+          <label class="input-label"
+            >Nome <span class="text-red-500">*</span></label
+          >
+          {{ form.name }} {% if form.name.errors %}
+          <p class="input-error">{{ form.name.errors.0 }}</p>
+          {% endif %}
+        </div>
+        <div>
+          <label class="input-label">CNPJ</label>
+          {{ form.cnpj }}
+        </div>
+        <div>
+          <label class="input-label">Telefone</label>
+          {{ form.phone }}
+        </div>
+        <div class="form-full">
+          <label class="input-label">E-mail</label>
+          {{ form.email }}
+        </div>
+        <div class="form-full">
+          <label class="input-label">Endereço</label>
+          {{ form.address }}
+        </div>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="submit" class="btn btn-primary">
+          {% if action == 'edit' %}Salvar alterações{% else %}Cadastrar
+          entidade{% endif %}
+        </button>
+        <a href="{% url 'employees:entity_list' %}" class="btn btn-secondary"
+          >Cancelar</a
+        >
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

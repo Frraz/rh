@@ -1,0 +1,10 @@
+-r base.txt
+
+# Debug
+django-debug-toolbar==4.4.2
+
+# Shell
+ipython==8.27.0
+
+# Linting
+flake8==7.1.1

@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}Colaboradores{% endblock %}
+{% block mobile_title %}Colaboradores{% endblock %}
+
+{% block content %}
+<div class="page-header mb-6">
+  <div>
+    <h1 class="page-title">Colaboradores</h1>
+    <p class="page-subtitle">{{ total }} colaborador{{ total|pluralize:"es" }} encontrado{{ total|pluralize:"s" }}</p>
+  </div>
+  <a href="{% url 'employees:create' %}"
+     class="inline-flex items-center gap-2 px-4 py-2 bg-primary-600 text-white text-sm font-medium
+            rounded-lg hover:bg-primary-700 transition">
+    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+    </svg>
+    Novo colaborador
+  </a>
+</div>
+
+<!-- Filtros -->
+<div class="card p-4 mb-4">
+  <form method="get" class="flex flex-wrap gap-3 items-end">
+    <div class="flex-1 min-w-48">
+      <label class="block text-xs font-medium text-slate-600 mb-1">Buscar</label>
+      <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Nome ou CPF..."
+             class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2
+                    focus:ring-primary-500 focus:border-primary-500 outline-none" />
+    </div>
+    <div class="w-40">
+      <label class="block text-xs font-medium text-slate-600 mb-1">Tipo</label>
+      <select name="type" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg
+                                 focus:ring-2 focus:ring-primary-500 outline-none">
+        <option value="">Todos</option>
+        {% for val, label in person_types %}
+        <option value="{{ val }}" {% if request.GET.type == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="w-40">
+      <label class="block text-xs font-medium text-slate-600 mb-1">Status</label>
+      <select name="status" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg
+                                   focus:ring-2 focus:ring-primary-500 outline-none">
+        <option value="">Todos</option>
+        <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Ativo</option>
+        <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Inativo</option>
+      </select>
+    </div>
+    <button type="submit" class="px-4 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition">
+      Filtrar
+    </button>
+    <a href="{% url 'employees:list' %}" class="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 transition">
+      Limpar
+    </a>
+  </form>
+</div>
+
+<!-- Lista -->
+{% if persons %}
+<div class="card overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-slate-200 bg-slate-50">
+          <th class="text-left px-4 py-3 font-medium text-slate-600">Nome</th>
+          <th class="text-left px-4 py-3 font-medium text-slate-600 hidden sm:table-cell">CPF</th>
+          <th class="text-left px-4 py-3 font-medium text-slate-600 hidden md:table-cell">Tipo</th>
+          <th class="text-left px-4 py-3 font-medium text-slate-600 hidden lg:table-cell">Fazenda</th>
+          <th class="text-left px-4 py-3 font-medium text-slate-600 hidden lg:table-cell">Função</th>
+          <th class="text-center px-4 py-3 font-medium text-slate-600">Status</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for person in persons %}
+        <tr class="hover:bg-slate-50 transition">
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                <span class="text-xs font-semibold text-primary-600">{{ person.name|first|upper }}</span>
+              </div>
+              <div>
+                <a href="{% url 'employees:detail' person.pk %}"
+                   class="font-medium text-slate-900 hover:text-primary-600 transition">
+                  {{ person.name }}
+                </a>
+                <p class="text-xs text-slate-400 sm:hidden">{{ person.cpf }}</p>
+              </div>
+            </div>
+          </td>
+          <td class="px-4 py-3 text-slate-600 hidden sm:table-cell">{{ person.cpf }}</td>
+          <td class="px-4 py-3 hidden md:table-cell">
+            <span class="inline-flex px-2 py-0.5 text-xs rounded-full
+              {% if person.is_employee %}bg-blue-100 text-blue-700{% else %}bg-purple-100 text-purple-700{% endif %}">
+              {{ person.get_person_type_display }}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-slate-600 hidden lg:table-cell">{{ person.farm.name }}</td>
+          <td class="px-4 py-3 text-slate-600 hidden lg:table-cell">{{ person.job_role.name }}</td>
+          <td class="px-4 py-3 text-center">
+            {% if person.is_active %}
+            <span class="badge-active">Ativo</span>
+            {% else %}
+            <span class="badge-inactive">Inativo</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-2 justify-end">
+              <a href="{% url 'employees:detail' person.pk %}"
+                 class="p-1.5 text-slate-400 hover:text-primary-600 rounded-lg hover:bg-primary-50 transition"
+                 title="Ver detalhes">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </a>
+              <a href="{% url 'employees:update' person.pk %}"
+                 class="p-1.5 text-slate-400 hover:text-amber-600 rounded-lg hover:bg-amber-50 transition"
+                 title="Editar">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Paginação -->
+{% if is_paginated %}
+<div class="flex items-center justify-between mt-4">
+  <p class="text-sm text-slate-500">
+    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+  </p>
+  <div class="flex gap-2">
+    {% if page_obj.has_previous %}
+    <a href="?page={{ page_obj.previous_page_number }}&{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}"
+       class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg hover:bg-slate-50 transition">
+      Anterior
+    </a>
+    {% endif %}
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}&{% for k,v in request.GET.items %}{% if k != 'page' %}{{ k }}={{ v }}&{% endif %}{% endfor %}"
+       class="px-3 py-1.5 text-sm bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition">
+      Próxima
+    </a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="card p-12 text-center">
+  <svg class="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+  <p class="text-slate-500 font-medium">Nenhum colaborador encontrado</p>
+  <p class="text-slate-400 text-sm mt-1">Tente ajustar os filtros ou cadastre um novo colaborador.</p>
+  <a href="{% url 'employees:create' %}" class="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700 transition">
+    Cadastrar colaborador
+  </a>
+</div>
+{% endif %}
+{% endblock %}
